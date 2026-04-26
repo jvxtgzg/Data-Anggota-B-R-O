@@ -1,277 +1,101 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BRO Member Database</title>
-  <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
-    body {
-      margin: 0; min-height: 100vh; background: #111827; color: #f9fafb;
-      display: flex; align-items: center; justify-content: center; padding: 20px;
-    }
-    .container { width: 100%; max-width: 1000px; background: #1f2937; border-radius: 14px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
-    h1, h2, h3 { margin-top: 0; }
-    .center { text-align: center; }
-    .login-box { max-width: 420px; margin: auto; }
-    input, select { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 8px; font-size: 15px; }
-    button { padding: 11px 14px; border: none; border-radius: 8px; background: #2563eb; color: white; font-size: 14px; cursor: pointer; font-weight: bold; }
-    button:hover { background: #1d4ed8; }
-    .danger { background: #dc2626; }
-    .danger:hover { background: #b91c1c; }
-    .gray { background: #4b5563; }
-    .gray:hover { background: #374151; }
-    .green { background: #16a34a; }
-    .green:hover { background: #15803d; }
-    .error { color: #f87171; text-align: center; margin-top: 10px; display: none; }
-    .success { color: #86efac; text-align: center; margin-top: 10px; display: none; }
-    .data-page { display: none; }
-    .top-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-    .action-bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #111827; border-radius: 10px; overflow: hidden; }
-    th, td { padding: 12px; border-bottom: 1px solid #374151; text-align: left; font-size: 14px; }
-    th { background: #374151; color: #fff; }
-    tr:hover { background: #1f2937; }
-    .form-box { display: none; background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 16px; margin-top: 15px; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .note { margin-top: 15px; font-size: 13px; color: #d1d5db; text-align: center; }
-    .small { font-size: 12px; color: #d1d5db; }
-    .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    @media (max-width: 700px) {
-      .grid { grid-template-columns: 1fr; }
-      table, thead, tbody, th, td, tr { display: block; }
-      thead { display: none; }
-      tr { margin-bottom: 12px; border: 1px solid #374151; border-radius: 10px; padding: 10px; }
-      td { border: none; padding: 8px; }
-      td::before { content: attr(data-label) ": "; font-weight: bold; color: #93c5fd; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRO Database (Google Sheet)</title>
+<style>
+body{font-family:Arial;background:#111827;color:#fff;text-align:center;padding:20px}
+input,button{padding:10px;margin:5px;border-radius:8px;border:none}
+button{background:#2563eb;color:white;cursor:pointer}
+table{width:100%;margin-top:20px;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #444}
+th{background:#374151}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div id="loginPage" class="login-box">
-      <h1 class="center">BRO Member Access</h1>
-      <p class="center small">Enter weekly access PIN to view member database.</p>
-      <input type="password" id="accessPinInput" placeholder="Enter access PIN" />
-      <button style="width:100%;" onclick="checkAccessPIN()">Access Database</button>
-      <p id="accessError" class="error">Incorrect PIN. Access denied.</p>
-    </div>
 
-    <div id="dataPage" class="data-page">
-      <div class="top-bar">
-        <h2>BRO Member Database</h2>
-        <button class="danger" onclick="logout()">Logout</button>
-      </div>
+<!-- HEADER LOGO -->
+<div style="background:#1f2937;padding:15px;border-radius:10px;margin-bottom:20px;">
+<img src="https://raw.githubusercontent.com/jvxtgzg/Data-Anggota-B-R-O/main/BRO%20LOGO.png" alt="BRO LOGO" style="height:80px;display:block;margin:auto;">
+<h2 style="margin:10px 0 0 0;">Bureau of Response Operations</h2>
+</div>
 
-      <div class="action-bar">
-        <button class="green" onclick="requestEditPIN('add')">+ Add New Member</button>
-        <button class="gray" onclick="resetDefaultData()">Reset Sample Data</button>
-      </div>
+<h1>BRO Member Access</h1>
+<input type="password" id="pin" placeholder="Enter PIN">
+<button onclick="login()">Access</button>
+<p id="err" style="color:red;display:none">Wrong PIN</p>
 
-      <div id="formBox" class="form-box">
-        <h3 id="formTitle">Add New Member</h3>
-        <div class="grid">
-          <input type="text" id="nameInput" placeholder="Name" />
-          <input type="text" id="callsignInput" placeholder="Callsign" />
-          <input type="text" id="rankInput" placeholder="Rank" />
-          <input type="text" id="divisionInput" placeholder="Division" />
-          <select id="statusInput">
-            <option value="Active">Active</option>
-            <option value="Undercover">Undercover</option>
-            <option value="Suspended">Suspended</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
-        <div class="action-bar">
-          <button class="green" onclick="saveMember()">Save</button>
-          <button class="gray" onclick="closeForm()">Cancel</button>
-        </div>
-        <p id="formSuccess" class="success">Data saved.</p>
-      </div>
+<div id="data" style="display:none">
+<h2>Member Database</h2>
 
-      <table>
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Name</th>
-            <th>Callsign</th>
-            <th>Rank</th>
-            <th>Division</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="memberTable"></tbody>
-      </table>
+<!-- 🔍 SEARCH -->
+<input type="text" id="search" placeholder="Search Code Name / Callsign" onkeyup="searchData()">
 
-      <p class="note">Edit data requires edit PIN. Current edit PIN: BRO83830. Data is saved in this browser using localStorage.</p>
-    </div>
-  </div>
+<table>
+<thead>
+<tr>
+<th>No</th>
+<th>Nama</th>
+<th>Code Name</th>
+<th>Callsign</th>
+<th>Division</th>
+<th>Rank</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+</div>
 
-  <script>
-    // PIN untuk membuka halaman data. Ganti setiap minggu jika diperlukan.
-    const weeklyAccessPIN = "BRO-2026";
+<script>
+const PIN = "BRO-2026";
+const sheetURL = "https://opensheet.elk.sh/1yVsYlFJkPeIp6p3LApsiW4Ivv_5XihznO7BJLf_VRsY/Sheet1";
 
-    // PIN khusus untuk tambah/edit/hapus data anggota.
-    const editPIN = "BRO83830";
+let allData = [];
 
-    let editingIndex = null;
+function login(){
+if(document.getElementById("pin").value===PIN){
+document.getElementById("data").style.display="block";
+loadData();
+}else{
+document.getElementById("err").style.display="block";
+}
+}
 
-    const defaultMembers = [
-      { name: "Agent Name 1", callsign: "BRO-101", rank: "Director", division: "Command", status: "Active" },
-      { name: "Agent Name 2", callsign: "BRO-201", rank: "Senior Agent", division: "Intelligence", status: "Active" },
-      { name: "Agent Name 3", callsign: "BRO-301", rank: "Field Agent", division: "Anti-Corruption", status: "Undercover" }
-    ];
+async function loadData(){
+const res = await fetch(sheetURL);
+allData = await res.json();
+renderTable(allData);
+}
 
-    function getMembers() {
-      const saved = localStorage.getItem("broMembers");
-      if (!saved) {
-        localStorage.setItem("broMembers", JSON.stringify(defaultMembers));
-        return defaultMembers;
-      }
-      return JSON.parse(saved);
-    }
+function renderTable(data){
+const table = document.getElementById("table");
+table.innerHTML="";
 
-    function setMembers(members) {
-      localStorage.setItem("broMembers", JSON.stringify(members));
-    }
+data.forEach((row,i)=>{
+table.innerHTML += `
+<tr>
+<td>${i+1}</td>
+<td>${row.NAMA}</td>
+<td>${row["CODE NAME"]}</td>
+<td>${row.CALLSIGN}</td>
+<td>${row.DIVISION}</td>
+<td>${row.RANK}</td>
+</tr>`;
+});
+}
 
-    function checkAccessPIN() {
-      const pin = document.getElementById("accessPinInput").value;
-      const error = document.getElementById("accessError");
-      if (pin === weeklyAccessPIN) {
-        document.getElementById("loginPage").style.display = "none";
-        document.getElementById("dataPage").style.display = "block";
-        error.style.display = "none";
-        renderTable();
-      } else {
-        error.style.display = "block";
-      }
-    }
+function searchData(){
+const keyword = document.getElementById("search").value.toLowerCase();
 
-    function requestEditPIN(action, index = null) {
-      const pin = prompt("Enter edit PIN:");
-      if (pin !== editPIN) {
-        alert("Incorrect edit PIN. Access denied.");
-        return;
-      }
+const filtered = allData.filter(row =>
+(row["CODE NAME"] && row["CODE NAME"].toLowerCase().includes(keyword)) ||
+(row.CALLSIGN && row.CALLSIGN.toLowerCase().includes(keyword))
+);
 
-      if (action === "add") openAddForm();
-      if (action === "edit") openEditForm(index);
-      if (action === "delete") deleteMember(index);
-    }
+renderTable(filtered);
+}
+</script>
 
-    function openAddForm() {
-      editingIndex = null;
-      document.getElementById("formTitle").innerText = "Add New Member";
-      document.getElementById("nameInput").value = "";
-      document.getElementById("callsignInput").value = "";
-      document.getElementById("rankInput").value = "";
-      document.getElementById("divisionInput").value = "";
-      document.getElementById("statusInput").value = "Active";
-      document.getElementById("formBox").style.display = "block";
-    }
-
-    function openEditForm(index) {
-      const members = getMembers();
-      const member = members[index];
-      editingIndex = index;
-      document.getElementById("formTitle").innerText = "Edit Member";
-      document.getElementById("nameInput").value = member.name;
-      document.getElementById("callsignInput").value = member.callsign;
-      document.getElementById("rankInput").value = member.rank;
-      document.getElementById("divisionInput").value = member.division;
-      document.getElementById("statusInput").value = member.status;
-      document.getElementById("formBox").style.display = "block";
-    }
-
-    function saveMember() {
-      const member = {
-        name: document.getElementById("nameInput").value.trim(),
-        callsign: document.getElementById("callsignInput").value.trim(),
-        rank: document.getElementById("rankInput").value.trim(),
-        division: document.getElementById("divisionInput").value.trim(),
-        status: document.getElementById("statusInput").value
-      };
-
-      if (!member.name || !member.callsign || !member.rank || !member.division) {
-        alert("Please complete all fields.");
-        return;
-      }
-
-      const members = getMembers();
-      if (editingIndex === null) {
-        members.push(member);
-      } else {
-        members[editingIndex] = member;
-      }
-
-      setMembers(members);
-      renderTable();
-      closeForm();
-      alert("Member data saved successfully.");
-    }
-
-    function deleteMember(index) {
-      const members = getMembers();
-      const confirmDelete = confirm(`Delete ${members[index].name}?`);
-      if (!confirmDelete) return;
-      members.splice(index, 1);
-      setMembers(members);
-      renderTable();
-    }
-
-    function renderTable() {
-      const members = getMembers();
-      const table = document.getElementById("memberTable");
-      table.innerHTML = "";
-
-      members.forEach((member, index) => {
-        table.innerHTML += `
-          <tr>
-            <td data-label="No">${index + 1}</td>
-            <td data-label="Name">${member.name}</td>
-            <td data-label="Callsign">${member.callsign}</td>
-            <td data-label="Rank">${member.rank}</td>
-            <td data-label="Division">${member.division}</td>
-            <td data-label="Status">${member.status}</td>
-            <td data-label="Action">
-              <div class="row-actions">
-                <button onclick="requestEditPIN('edit', ${index})">Edit</button>
-                <button class="danger" onclick="requestEditPIN('delete', ${index})">Delete</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    function closeForm() {
-      document.getElementById("formBox").style.display = "none";
-      editingIndex = null;
-    }
-
-    function resetDefaultData() {
-      const pin = prompt("Enter edit PIN to reset data:");
-      if (pin !== editPIN) {
-        alert("Incorrect edit PIN. Access denied.");
-        return;
-      }
-      localStorage.setItem("broMembers", JSON.stringify(defaultMembers));
-      renderTable();
-      closeForm();
-    }
-
-    function logout() {
-      document.getElementById("accessPinInput").value = "";
-      document.getElementById("dataPage").style.display = "none";
-      document.getElementById("loginPage").style.display = "block";
-      closeForm();
-    }
-
-    document.getElementById("accessPinInput").addEventListener("keydown", function(event) {
-      if (event.key === "Enter") checkAccessPIN();
-    });
-  </script>
 </body>
 </html>
