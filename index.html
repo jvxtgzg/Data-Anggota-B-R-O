@@ -51,49 +51,16 @@ th{background:#374151}
 // =======================
 // CONFIG
 // =======================
+const PIN = "BRO-1222"; // ⬅️ PIN tetap
 const sheetURL = "https://opensheet.elk.sh/1yVsYlFJkPeIp6p3LApsiW4Ivv_5XihznO7BJLf_VRsY/Sheet1";
 
-// endpoint Anda (mode read PIN)
-const PIN_API  = "https://script.google.com/macros/s/AKfycbw90vXeRd_andUcgzX8aUqnKoN2eHJwvAHvFOMelzetk1Iu6n0FhQ74ZfICTeJcr4S9/exec?action=get";
-
-let PIN = null;
 let allData = [];
-
-// =======================
-// INIT
-// =======================
-window.onload = () => {
-  loadPIN();
-};
-
-// =======================
-// LOAD PIN (E1)
-// =======================
-async function loadPIN(){
-  try{
-    const res = await fetch(PIN_API);
-    const data = await res.json();
-
-    // pastikan string bersih
-    PIN = (data.pin || "").toString().trim();
-
-    console.log("PIN READY:", PIN);
-  }catch(err){
-    console.error("PIN LOAD ERROR:", err);
-    alert("Gagal ambil PIN dari server");
-  }
-}
 
 // =======================
 // LOGIN
 // =======================
 function login(){
   const input = document.getElementById("pin").value.trim();
-
-  if(PIN === null){
-    alert("Tunggu, sistem belum siap");
-    return;
-  }
 
   if(input === PIN){
     document.getElementById("data").style.display = "block";
