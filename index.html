@@ -8,6 +8,7 @@
 body{font-family:Arial;background:#111827;color:#fff;text-align:center;padding:20px}
 input,button{padding:10px;margin:5px;border-radius:8px;border:none}
 button{background:#2563eb;color:white;cursor:pointer}
+.controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:10px}
 table{width:100%;margin-top:20px;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid #444}
 th{background:#374151}
@@ -15,22 +16,26 @@ th{background:#374151}
 </head>
 <body>
 
-<!-- HEADER LOGO -->
 <div style="background:#1f2937;padding:15px;border-radius:10px;margin-bottom:20px;">
 <img src="https://raw.githubusercontent.com/jvxtgzg/Data-Anggota-B-R-O/main/BRO%20LOGO.png" alt="BRO LOGO" style="height:80px;display:block;margin:auto;">
 <h2 style="margin:10px 0 0 0;">Bureau of Response Operations</h2>
 </div>
 
+<div id="access">
 <h1>BRO Member Access</h1>
 <input type="password" id="pin" placeholder="Enter PIN">
+<button type="button" onclick="togglePin(this)">View PIN</button>
 <button onclick="login()">Access</button>
 <p id="err" style="color:red;display:none">Wrong PIN</p>
+</div>
 
 <div id="data" style="display:none">
 <h2>Member Database</h2>
 
-<!-- 🔍 SEARCH -->
+<div class="controls">
 <input type="text" id="search" placeholder="Search Code Name / Callsign" onkeyup="searchData()">
+<button onclick="refreshData()">Refresh</button>
+</div>
 
 <table>
 <thead>
@@ -48,21 +53,16 @@ th{background:#374151}
 </div>
 
 <script>
-// =======================
-// CONFIG
-// =======================
-const PIN = "BRO-1222"; // ⬅️ PIN tetap
+const PIN = "BRO-1222";
 const sheetURL = "https://opensheet.elk.sh/1yVsYlFJkPeIp6p3LApsiW4Ivv_5XihznO7BJLf_VRsY/Sheet1";
 
 let allData = [];
 
-// =======================
-// LOGIN
-// =======================
 function login(){
   const input = document.getElementById("pin").value.trim();
 
   if(input === PIN){
+    document.getElementById("access").style.display = "none";
     document.getElementById("data").style.display = "block";
     document.getElementById("err").style.display = "none";
     loadData();
@@ -71,12 +71,21 @@ function login(){
   }
 }
 
-// =======================
-// LOAD DATA
-// =======================
+function togglePin(btn){
+  const pin = document.getElementById("pin");
+
+  if(pin.type === "password"){
+    pin.type = "text";
+    btn.textContent = "Hide PIN";
+  }else{
+    pin.type = "password";
+    btn.textContent = "View PIN";
+  }
+}
+
 async function loadData(){
   try{
-    const res = await fetch(sheetURL);
+    const res = await fetch(`${sheetURL}?t=${Date.now()}`);
     allData = await res.json();
     renderTable(allData);
   }catch(err){
@@ -85,9 +94,11 @@ async function loadData(){
   }
 }
 
-// =======================
-// RENDER TABLE
-// =======================
+function refreshData(){
+  document.getElementById("search").value = "";
+  loadData();
+}
+
 function renderTable(data){
   const table = document.getElementById("table");
   table.innerHTML = "";
@@ -110,9 +121,6 @@ function renderTable(data){
   });
 }
 
-// =======================
-// SEARCH
-// =======================
 function searchData(){
   const keyword = document.getElementById("search").value.toLowerCase();
 
