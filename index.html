@@ -85,7 +85,7 @@ function togglePin(btn){
 
 async function loadData(){
   try{
-    const res = await fetch(`${sheetURL}?t=${Date.now()}`);
+    const res = await fetch(sheetURL, { cache: "no-store" });
     allData = await res.json();
     renderTable(allData);
   }catch(err){
